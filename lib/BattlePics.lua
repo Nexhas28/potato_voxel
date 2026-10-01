@@ -113,6 +113,12 @@ BattlePics.FILL = { 1, 1, 1, 1 }
 -- Anything at or under this alpha counts as keyed-out rather than drawn.
 local CUT = 0.5
 
+-- A mod can mark a gap in its own art as deliberate by giving those pixels an
+-- alpha above zero but no higher than this. They are invisible when drawn, but
+-- they are not keyed-out paper, so the fill below leaves them transparent
+-- instead of painting them white. Crystal Animated Sprites writes 1/255.
+local GAP = 0.02
+
 -- A decoded battle pic is a single drawing. A lone opaque texel separated
 -- from that drawing is not a sprite feature: when its 160x144 capture is
 -- stood up in the voxel scene, it becomes a conspicuous floating dash.
@@ -374,7 +380,7 @@ function BattlePics.filled(img, sealBottom)
       for x = x0, x1 do
         if not outside[row + x] then
           local _, _, _, a = data:getPixel(x, y)
-          if a <= CUT then
+          if a <= CUT and not (a > 0 and a <= GAP) then
             data:setPixel(x, y, fr, fg, fb, fill[4])
             changed = true
           end
